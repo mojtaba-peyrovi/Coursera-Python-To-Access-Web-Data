@@ -1,27 +1,32 @@
 import urllib
-import xml.etree.ElementTree as ET
+from urllib.request import urlopen
+import json
 
-# extract all the comment/count values from the url and get the sum of all of them
-url = '  http://py4e-data.dr-chuck.net/comments_238622.xml'
+serviceurl = "http://python-data.dr-chuck.net/geojson?"
 
-# get the content of the url as a string
-data = urllib.request.urlopen(url).read()
+while True:
 
-# transform the string content into a xml tree
-tree = ET.fromstring(data)
+    address = input("Enter location: ")
 
-# find all count elements
-counts = tree.findall('comments/comment/count')
+    if len(address) < 1 : break
 
-# extract the value of each count element and add it to the total
-total = 0
-for count in counts:
-    total += int(count.text)
+    url = serviceurl + urllib.parse.urlencode({'sensor':'false','address':address})
 
-print ('total: ', total)
+    print('Retrieving',url)
 
+    uh = urlopen(url)
+    data = uh.read()
+    print('Retrived',len(data),'characters')
 
+    try: js = json.loads(str(data))
+    except: js = None
+    if not js or 'status' not in js or js['status'] != 'OK':
+        print ('==== Failure To Retrieve ====')
+#        print (data)
+        continue
 
+    placeid = js["results"][0]['place_id']
+    print ("Place id",placeid)
 
 # import urllib.request, urllib.parse, urllib.error
 # import xml.etree.ElementTree as ET
